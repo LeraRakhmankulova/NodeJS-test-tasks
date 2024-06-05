@@ -9,6 +9,10 @@ app.use(express.json());
 
 app.use('/users', userRoutes);
 
+app.use('*', (req, res) => {
+  res.status(404).send({ 'message': 'Route not found' });
+});
+
 app.use(errors());
 
 app.listen(3000, () => {
