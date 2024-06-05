@@ -1,84 +1,46 @@
 const User = require('../models/user');
-const request = require('request');
+const axios = require('axios');
 
-module.exports.createUser = (req, res) => {
-  const { email, password } = req.body;
-
-  User.create({ email, password })
-  .then(data => {
-    request(
-      {
-        method: 'POST',
-        url: 'http://localhost:3001/history',
-        json: {
-          data: data
-        }
-      },
-      (err, response, data) => {
-        if(err) {
-          return res.status(500).send({ 'message': 'Непредвиденная ошибка.' })
-        }
-
-        return res.status(201).send({ data });
-      }
-    );
-  })
-  .catch(err => {
-    if(err.errors.find(item => item.validatorKey === 'not_unique')) {
-      res.status(403).send({ 'message': 'Такой email уже используется.' });
-      return;
+const createUser = async (req, res) => {
+    try {
+        const user = await User.create(req.body);
+        await axios.post('http://localhost:3001/history', {
+            action: 'create',
+            userId: user.id,
+            details: req.body,
+        });
+        res.status(201).json(user);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
+};
 
-    res.status(500).send({ 'message': 'Непредвиденная ошибка.' });
-  })
-}
-
-module.exports.getUsers = (req, res) => {
-  User.findAll()
-  .then(data => res.send({ data }))
-  .catch(() => res.status(500).send({ 'message': 'Непредвиденная ошибка.' }))
-}
-
-module.exports.updateUser = (req, res) => {
-  const { email, password } = req.body;
-  const { id } = req.params;
-
-  User.update({ email, password }, {
-    where: { id },
-  })
-  .then(() => {
-    User.findByPk(id)
-    .then(data => {
-      if(!data) {
-        res.status(404).send({ 'message': 'Пользователь не найден.' });
-        return;
-      }
-
-      request(
-        {
-          method: 'POST',
-          url: 'http://localhost:3001/history',
-          json: {
-            data: data
-          }
-        },
-        (err, response, data) => {
-          if(err) {
-            return res.status(500).send({ 'message': 'Непредвиденная ошибка.' })
-          }
-
-          return res.send({ data });
+const updateUser = async (req, res) => {
+    try {
+        const user = await User.findByPk(req.params.id);
+        if (user) {
+            await user.update(req.body);
+            await axios.post('http://localhost:3001/history', {
+                action: 'update',
+                userId: user.id,
+                details: req.body,
+            });
+            res.status(200).json(user);
+        } else {
+            res.status(404).json({ error: 'User not found' });
         }
-      );
-    })
-    .catch(() => res.status(500).send({ 'message': 'Непредвиденная ошибка.' }));
-  })
-  .catch(err => {
-    if(err.errors.find(item => item.validatorKey === 'not_unique')) {
-      res.status(403).send({ 'message': 'Такой email уже используется.' });
-      return;
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
+};
 
-    res.status(500).send({ 'message': 'Непредвиденная ошибка.' });
-  })
-}
+const getUsers = async (req, res) => {
+    try {
+        const users = await User.findAll();
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { createUser, updateUser, getUsers };

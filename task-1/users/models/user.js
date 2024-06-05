@@ -1,27 +1,31 @@
-const { DataTypes } = require('sequelize');
-const db = require('../middlewares/db');
+const { DataTypes } = require("sequelize");
+const db = require("../middlewares/db");
 
-const user = db.define('user', {
+const user = db.define("user", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
-    primaryKey: true
+    primaryKey: true,
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   email: {
-    type: DataTypes.STRING(254),
+    type: DataTypes.STRING,
     allowNull: false,
     unique: true,
     validate: {
-      isEmail: true
-    }
+      isEmail: true,
+    },
   },
   password: {
     type: DataTypes.TEXT,
     allowNull: false,
     validate: {
-     len: [6]
-    }
-  }
+      len: [6],
+    },
+  },
 });
 
 user.sync();

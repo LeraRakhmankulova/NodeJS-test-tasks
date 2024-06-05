@@ -7,10 +7,18 @@ const History = sequelize.define('history', {
     autoIncrement: true,
     primaryKey: true
   },
-  history: {
-    type: DataTypes.JSON,
-    allowNull: false
-  }
+  action: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  details: {
+    type: DataTypes.JSONB,
+    allowNull: false,
+  },
 });
 
 History.sync();

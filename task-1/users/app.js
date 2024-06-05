@@ -2,17 +2,15 @@ const express = require('express');
 const { errors } = require('celebrate');
 require('dotenv').config();
 
-const { PORT = 3002 } = process.env;
 const app = express();
+const userRoutes = require('./routes/users');
 
 app.use(express.json());
 
-app.use('/users', require('./routes/users'));
-
-app.use('*', (req, res) => {
-  res.status(404).send({ 'message': 'Маршрут не найден.' });
-});
+app.use('/users', userRoutes);
 
 app.use(errors());
 
-app.listen(PORT);
+app.listen(3000, () => {
+  console.log('User service running on port 3000');
+});
